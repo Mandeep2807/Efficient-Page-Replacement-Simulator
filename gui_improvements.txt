@@ -1,0 +1,5 @@
+Notes for GUI Improvements:
+- Consider adding validation for empty input fields.
+- Improve the layout of results for readability.
+- Add color coding for hits vs misses.
+- Optionally add graphs or bar charts for page faults comparison.
