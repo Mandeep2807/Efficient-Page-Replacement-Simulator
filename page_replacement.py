@@ -1,28 +1,36 @@
-# page_replacement.py
+# Efficient Page Replacement Algorithm Simulator
+# This file contains full implementations of FIFO, LRU, and Optimal algorithms.
+# Output includes page faults, hits, hit ratio, step-by-step frames, and a console display.
 
+# -------------------------------------------------------------
+# FIFO Algorithm (First-In-First-Out)
+# Replaces the oldest loaded page in memory.
+# -------------------------------------------------------------
 def simulate_fifo(pages, frame_count):
     frames = []
     page_faults = 0
     hits = 0
     steps = []
-
-    queue_index = 0  # to track which frame to replace
+    queue_index = 0  # Pointer for FIFO replacement
 
     for page in pages:
         step_info = {}
+
         if page in frames:
             hits += 1
             hit_or_miss = "Hit"
         else:
             page_faults += 1
             hit_or_miss = "Miss"
+
             if len(frames) < frame_count:
                 frames.append(page)
             else:
-                # replace in FIFO manner
+                # Replace using FIFO order
                 frames[queue_index] = page
                 queue_index = (queue_index + 1) % frame_count
 
+        # Record step information
         step_info["page"] = page
         step_info["frames"] = frames.copy()
         step_info["result"] = hit_or_miss
@@ -40,14 +48,16 @@ def simulate_fifo(pages, frame_count):
     }
 
 
+# -------------------------------------------------------------
+# LRU Algorithm (Least Recently Used)
+# Replaces the page that was not used for the longest time.
+# -------------------------------------------------------------
 def simulate_lru(pages, frame_count):
     frames = []
     page_faults = 0
     hits = 0
     steps = []
-
-    # to track last used index of each page in frames
-    last_used = {}
+    last_used = {}  # Tracks when each page was last accessed
 
     for current_index, page in enumerate(pages):
         step_info = {}
@@ -62,25 +72,23 @@ def simulate_lru(pages, frame_count):
             if len(frames) < frame_count:
                 frames.append(page)
             else:
-                # find least recently used page
-                # check last_used index for each page in frames
+                # Find least recently used page
                 lru_page = None
                 lru_index = float("inf")
 
                 for p in frames:
-                    # if never used before, treat as very old
                     idx = last_used.get(p, -1)
                     if idx < lru_index:
                         lru_index = idx
                         lru_page = p
 
-                # replace lru_page with current page
                 replace_index = frames.index(lru_page)
                 frames[replace_index] = page
 
-        # update last used index of current page
+        # Update last used time
         last_used[page] = current_index
 
+        # Record step state
         step_info["page"] = page
         step_info["frames"] = frames.copy()
         step_info["result"] = hit_or_miss
@@ -98,6 +106,10 @@ def simulate_lru(pages, frame_count):
     }
 
 
+# -------------------------------------------------------------
+# Optimal Algorithm
+# Replaces the page that will not be used for the longest time in the future.
+# -------------------------------------------------------------
 def simulate_optimal(pages, frame_count):
     frames = []
     page_faults = 0
@@ -117,17 +129,15 @@ def simulate_optimal(pages, frame_count):
             if len(frames) < frame_count:
                 frames.append(page)
             else:
-                # find page to replace using optimal strategy
+                # Check future use of each page in memory
                 farthest_index = -1
                 page_to_replace = None
 
                 for p in frames:
-                    # check when this page will appear next
                     try:
                         next_use = pages.index(p, i + 1)
                     except ValueError:
-                        # page not used again, best to replace this
-                        next_use = float("inf")
+                        next_use = float("inf")  # Not used again
 
                     if next_use > farthest_index:
                         farthest_index = next_use
@@ -136,6 +146,7 @@ def simulate_optimal(pages, frame_count):
                 replace_index = frames.index(page_to_replace)
                 frames[replace_index] = page
 
+        # Save step information
         step_info["page"] = page
         step_info["frames"] = frames.copy()
         step_info["result"] = hit_or_miss
@@ -153,21 +164,32 @@ def simulate_optimal(pages, frame_count):
     }
 
 
+# -------------------------------------------------------------
+# Helper: Print results in table format for console mode
+# (GUI also uses these results but formats differently)
+# -------------------------------------------------------------
 def print_result(result):
     print(f"\nAlgorithm: {result['name']}")
     print("Step\tPage\tFrames\t\tResult")
+
     for idx, step in enumerate(result["steps"], start=1):
         frames_str = " ".join(str(x) for x in step["frames"])
         print(f"{idx}\t{step['page']}\t{frames_str:<10}\t{step['result']}")
+
     print(f"Total Page Faults: {result['page_faults']}")
     print(f"Total Hits: {result['hits']}")
     print(f"Hit Ratio: {result['hit_ratio']*100:.2f}%")
-    
 
+
+# -------------------------------------------------------------
+# Main function for CLI usage (GUI users won't see this)
+# -------------------------------------------------------------
 def main():
     print("Efficient Page Replacement Algorithm Simulator")
+
     frame_count = int(input("Enter number of frames: "))
     ref_string = input("Enter reference string (space-separated pages): ")
+
     pages = list(map(int, ref_string.split()))
 
     fifo_result = simulate_fifo(pages, frame_count)
@@ -178,7 +200,7 @@ def main():
     print_result(lru_result)
     print_result(optimal_result)
 
-    # simple comparison
+    # Determine best algorithm
     all_results = [fifo_result, lru_result, optimal_result]
     best = min(all_results, key=lambda r: r["page_faults"])
     print(f"\nBest algorithm for this input (least page faults): {best['name']}")
