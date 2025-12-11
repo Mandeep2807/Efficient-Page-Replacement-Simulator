@@ -14,7 +14,7 @@ This simulator demonstrates how different page replacement algorithms behave whe
 Python 3.x and Tkinter (bundled with Python).
 ### Steps
 1. Clone the repository:  
-   git clone https://github.com/<your-username>/Efficient-Page-Replacement-Simulator  
+   git clone https://github.com/Mandeep2807/Efficient-Page-Replacement-Simulator 
 2. Open the folder in your system.  
 3. Run the GUI:  
    python gui.py  
